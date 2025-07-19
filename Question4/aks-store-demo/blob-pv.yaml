@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: blob-pv
+spec:
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  csi:
+    driver: blob.csi.azure.com
+    volumeHandle: blob-pv-handle
+    readOnly: false
+    volumeAttributes:
+      containerName: data
+      storageAccount: storeblobsavvy
+    nodeStageSecretRef:
+      name: azure-secret
+      namespace: default
+

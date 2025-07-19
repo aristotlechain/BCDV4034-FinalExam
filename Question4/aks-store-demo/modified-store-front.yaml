@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: store-front
+  namespace: default
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: store-front
+  template:
+    metadata:
+      labels:
+        app: store-front
+    spec:
+      containers:
+      - name: store-front
+        image: ghcr.io/azure-samples/aks-store-demo/store-front:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: store-front
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 3
+          periodSeconds: 3
+          failureThreshold: 5
+          successThreshold: 1
+          timeoutSeconds: 1
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 3
+          periodSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+          timeoutSeconds: 1
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: "1"
+            memory: 512Mi
+          requests:
+            cpu: 1m
+            memory: 200Mi
+        volumeMounts:
+        - mountPath: /mnt/blob
+          name: blob-volume
+      volumes:
+      - name: blob-volume
+        persistentVolumeClaim:
+          claimName: blob-pvc
+      restartPolicy: Always
+      nodeSelector:
+        kubernetes.io/os: linux
+      dnsPolicy: ClusterFirst
+
